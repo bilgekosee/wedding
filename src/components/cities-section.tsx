@@ -196,7 +196,16 @@ function JourneyMap({
         >
           <circle cx="56" cy="40" r="6" fill="var(--color-cream)" stroke="var(--color-sage-deep)" strokeWidth="1.4" />
           <circle cx="56" cy="40" r="2.6" fill="var(--color-sage-deep)" />
-          <text x="56" y="22" textAnchor="middle" className="fill-ink" style={{ font: "italic 12px var(--font-cormorant), serif" }}>
+          <text
+            x="56"
+            y="22"
+            textAnchor="middle"
+            fill="var(--color-ink)"
+            fontFamily="Georgia, serif"
+            fontStyle="italic"
+            fontSize="14"
+            fontWeight="500"
+          >
             Ankara
           </text>
         </motion.g>
@@ -210,7 +219,16 @@ function JourneyMap({
         >
           <circle cx="270" cy="145" r="6" fill="var(--color-cream)" stroke="var(--color-sage-deep)" strokeWidth="1.4" />
           <circle cx="270" cy="145" r="2.6" fill="var(--color-sage-deep)" />
-          <text x="270" y="166" textAnchor="middle" className="fill-ink" style={{ font: "italic 12px var(--font-cormorant), serif" }}>
+          <text
+            x="270"
+            y="168"
+            textAnchor="middle"
+            fill="var(--color-ink)"
+            fontFamily="Georgia, serif"
+            fontStyle="italic"
+            fontSize="14"
+            fontWeight="500"
+          >
             Mersin
           </text>
         </motion.g>
