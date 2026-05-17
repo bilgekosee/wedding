@@ -62,7 +62,7 @@ export function CitiesSection() {
         variants={fadeUp}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-15%" }}
+        viewport={{ once: true, amount: 0.2 }}
         className="text-center"
       >
         <p className="font-serif text-[11px] italic uppercase tracking-[0.4em] text-muted sm:text-xs">
@@ -87,7 +87,7 @@ export function CitiesSection() {
         variants={stagger}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-10%" }}
+        viewport={{ once: true, amount: 0.1 }}
         className="mt-12 space-y-4"
       >
         {cities.map((city) => (
@@ -140,17 +140,30 @@ function JourneyMap({
 }: {
   prefersReducedMotion: boolean;
 }) {
-  const draw = prefersReducedMotion
-    ? { pathLength: 1, opacity: 1 }
-    : { pathLength: 1, opacity: 1 };
+  // amount: 0.2 means "fire when 20% of the map is visible" — far more
+  // reliable on mobile than `margin: "-20%"`, which required the element
+  // to be 20% INSIDE viewport on both edges (unreachable for short SVGs
+  // on tall phones, so the animation never fired in production).
+  const viewportOpts = { once: true, amount: 0.2 } as const;
+
+  // Respect reduced-motion: render the final state immediately, no draw.
+  const pathTransition = prefersReducedMotion
+    ? { duration: 0 }
+    : { duration: 1.8, ease: [0.22, 1, 0.36, 1] as const };
+  const pinTransitionAnkara = prefersReducedMotion
+    ? { duration: 0 }
+    : { duration: 0.7, ease: [0.34, 1.4, 0.64, 1] as const, delay: 0.1 };
+  const pinTransitionMersin = prefersReducedMotion
+    ? { duration: 0 }
+    : { duration: 0.7, ease: [0.34, 1.4, 0.64, 1] as const, delay: 1.6 };
+  const leavesTransition = prefersReducedMotion
+    ? { duration: 0 }
+    : { duration: 1.2, delay: 1.4 };
+
   return (
     <div className="relative mx-auto w-full max-w-[22rem]">
-      <svg
-        viewBox="0 0 320 180"
-        className="w-full"
-        aria-hidden
-      >
-        {/* Dashed background path */}
+      <svg viewBox="0 0 320 180" className="w-full" aria-hidden>
+        {/* Dashed background path — always visible as fallback */}
         <path
           d="M 56 40 C 110 30, 150 90, 200 110 S 280 150, 270 145"
           stroke="var(--color-sage-deep)"
@@ -169,17 +182,17 @@ function JourneyMap({
           fill="none"
           strokeLinecap="round"
           initial={{ pathLength: 0, opacity: 0 }}
-          whileInView={draw}
-          viewport={{ once: true, margin: "-20%" }}
-          transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1] }}
+          whileInView={{ pathLength: 1, opacity: 1 }}
+          viewport={viewportOpts}
+          transition={pathTransition}
         />
 
         {/* Pin: Ankara */}
         <motion.g
           initial={{ opacity: 0, scale: 0.6, y: -8 }}
           whileInView={{ opacity: 1, scale: 1, y: 0 }}
-          viewport={{ once: true, margin: "-20%" }}
-          transition={{ duration: 0.7, ease: [0.34, 1.4, 0.64, 1], delay: 0.1 }}
+          viewport={viewportOpts}
+          transition={pinTransitionAnkara}
         >
           <circle cx="56" cy="40" r="6" fill="var(--color-cream)" stroke="var(--color-sage-deep)" strokeWidth="1.4" />
           <circle cx="56" cy="40" r="2.6" fill="var(--color-sage-deep)" />
@@ -192,12 +205,8 @@ function JourneyMap({
         <motion.g
           initial={{ opacity: 0, scale: 0.6, y: 8 }}
           whileInView={{ opacity: 1, scale: 1, y: 0 }}
-          viewport={{ once: true, margin: "-20%" }}
-          transition={{
-            duration: 0.7,
-            ease: [0.34, 1.4, 0.64, 1],
-            delay: 1.6,
-          }}
+          viewport={viewportOpts}
+          transition={pinTransitionMersin}
         >
           <circle cx="270" cy="145" r="6" fill="var(--color-cream)" stroke="var(--color-sage-deep)" strokeWidth="1.4" />
           <circle cx="270" cy="145" r="2.6" fill="var(--color-sage-deep)" />
@@ -210,8 +219,8 @@ function JourneyMap({
         <motion.g
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: "-20%" }}
-          transition={{ duration: 1.2, delay: 1.4 }}
+          viewport={viewportOpts}
+          transition={leavesTransition}
         >
           <ellipse cx="138" cy="64" rx="5" ry="2" fill="var(--color-sage)" opacity="0.7" transform="rotate(-25 138 64)" />
           <ellipse cx="216" cy="118" rx="5" ry="2" fill="var(--color-sage-deep)" opacity="0.55" transform="rotate(15 216 118)" />

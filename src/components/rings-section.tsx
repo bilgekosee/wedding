@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, type Variants } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 
 const frameVariants: Variants = {
   hidden: { opacity: 0, y: 24 },
@@ -30,41 +31,69 @@ export function RingsSection({
   caption?: string;
   ariaLabel?: string;
 }) {
+  const frameRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  // Lazy mount via IntersectionObserver with a generous rootMargin so the
+  // iframe begins fetching well before the user scrolls into view, but
+  // never during the initial page paint (which causes the Sketchfab loading
+  // screen / error flash on flaky mobile networks).
+  useEffect(() => {
+    const el = frameRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry && entry.isIntersecting) {
+          setMounted(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "600px 0px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <section
       aria-label={ariaLabel}
       className="relative mx-auto w-full max-w-[260px] px-4 text-ink sm:max-w-sm sm:px-6"
     >
       <motion.div
+        ref={frameRef}
         variants={frameVariants}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-15%" }}
+        viewport={{ once: true, amount: 0.2 }}
         className="relative w-full overflow-hidden"
         style={{ aspectRatio: "4 / 3" }}
       >
-        {/* Eager-mount: iframe is in the initial HTML so the browser starts
-            fetching Sketchfab while the user is still in the envelope/hero,
-            paired with <link rel="preconnect"> in the root layout.
-            multiply: model white center × cream page bg → cream.
-            mask: outer grey vignette fades to transparent so the page
-            background shows through cleanly. Rings appear to float.
-            translate-y nudge brings the model (which Sketchfab renders in
-            the upper third of its viewport) closer to the visual centre. */}
-        <iframe
-          title={`${ariaLabel} — 3B model`}
-          src={buildEmbedUrl(modelId)}
-          className="pointer-events-auto absolute left-1/2 top-1/2 h-[140%] w-[115%] -translate-x-1/2 -translate-y-[40%]"
-          style={{
-            mixBlendMode: "multiply",
-            maskImage: RADIAL_MASK,
-            WebkitMaskImage: RADIAL_MASK,
-          }}
-          allow="autoplay; fullscreen; xr-spatial-tracking"
-          allowFullScreen
-          loading="eager"
-          referrerPolicy="no-referrer-when-downgrade"
-        />
+        {mounted && (
+          // multiply: model white center × cream page bg → cream
+          // mask: outer grey vignette fades to transparent.
+          // opacity fade-in via onLoad: hides Sketchfab's loading state
+          // until the model is actually ready, so the user never sees an
+          // error/loader frame even on slow mobile networks.
+          <iframe
+            title={`${ariaLabel} — 3B model`}
+            src={buildEmbedUrl(modelId)}
+            onLoad={() => setLoaded(true)}
+            className="pointer-events-auto absolute left-1/2 top-1/2 h-[140%] w-[115%] -translate-x-1/2 -translate-y-[40%]"
+            style={{
+              mixBlendMode: "multiply",
+              maskImage: RADIAL_MASK,
+              WebkitMaskImage: RADIAL_MASK,
+              opacity: loaded ? 1 : 0,
+              transition: "opacity 700ms ease-out",
+            }}
+            allow="autoplay; fullscreen; xr-spatial-tracking"
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        )}
       </motion.div>
 
       {caption && (
