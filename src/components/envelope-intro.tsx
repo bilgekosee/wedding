@@ -16,7 +16,6 @@ export function EnvelopeIntro({ onDone }: { onDone?: () => void }) {
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef<number | null>(null);
-  const swipeStartRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!isDragging) return;
@@ -82,8 +81,6 @@ export function EnvelopeIntro({ onDone }: { onDone?: () => void }) {
   const onLetterTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     if (stage === "open") {
       startDrag(e.touches[0]?.clientY ?? 0);
-    } else if (stage === "raised") {
-      swipeStartRef.current = e.touches[0]?.clientY ?? null;
     }
   };
 
@@ -95,16 +92,9 @@ export function EnvelopeIntro({ onDone }: { onDone?: () => void }) {
     setDragY(Math.min(PULL_MAX, Math.max(0, delta)));
   };
 
-  const onLetterTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+  const onLetterTouchEnd = () => {
     if (stage === "open") {
       releaseDrag();
-      return;
-    }
-    if (stage === "raised" && swipeStartRef.current !== null) {
-      const end = e.changedTouches[0]?.clientY ?? swipeStartRef.current;
-      const delta = end - swipeStartRef.current;
-      swipeStartRef.current = null;
-      if (delta < -40) finish();
     }
   };
 
@@ -136,7 +126,7 @@ export function EnvelopeIntro({ onDone }: { onDone?: () => void }) {
       ? "açmak için dokun"
       : stage === "open"
         ? "kağıdı yukarı çek"
-        : "devam etmek için dokun veya kaydır";
+        : "devam etmek için dokun";
 
   return (
     <div
