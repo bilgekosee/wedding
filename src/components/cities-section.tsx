@@ -187,7 +187,11 @@ function JourneyMap({
           transition={pathTransition}
         />
 
-        {/* Pin: Ankara */}
+        {/* Pin: Ankara — circles animate, text stays static.
+            iOS Safari sometimes drops <text> rendering when wrapped in a
+            motion.g with initial opacity 0, even after the animation
+            completes. Keeping text outside the motion group guarantees
+            it renders on every device. */}
         <motion.g
           initial={{ opacity: 0, scale: 0.6, y: -8 }}
           whileInView={{ opacity: 1, scale: 1, y: 0 }}
@@ -196,21 +200,21 @@ function JourneyMap({
         >
           <circle cx="56" cy="40" r="6" fill="var(--color-cream)" stroke="var(--color-sage-deep)" strokeWidth="1.4" />
           <circle cx="56" cy="40" r="2.6" fill="var(--color-sage-deep)" />
-          <text
-            x="56"
-            y="22"
-            textAnchor="middle"
-            fill="#2b2a26"
-            fontFamily="Georgia, serif"
-            fontStyle="italic"
-            fontSize="14"
-            fontWeight="500"
-          >
-            Ankara
-          </text>
         </motion.g>
+        <text
+          x="56"
+          y="22"
+          textAnchor="middle"
+          fill="#2b2a26"
+          fontFamily="Georgia, serif"
+          fontStyle="italic"
+          fontSize="14"
+          fontWeight="500"
+        >
+          Ankara
+        </text>
 
-        {/* Pin: Mersin */}
+        {/* Pin: Mersin — same pattern */}
         <motion.g
           initial={{ opacity: 0, scale: 0.6, y: 8 }}
           whileInView={{ opacity: 1, scale: 1, y: 0 }}
@@ -219,19 +223,19 @@ function JourneyMap({
         >
           <circle cx="270" cy="145" r="6" fill="var(--color-cream)" stroke="var(--color-sage-deep)" strokeWidth="1.4" />
           <circle cx="270" cy="145" r="2.6" fill="var(--color-sage-deep)" />
-          <text
-            x="270"
-            y="168"
-            textAnchor="middle"
-            fill="#2b2a26"
-            fontFamily="Georgia, serif"
-            fontStyle="italic"
-            fontSize="14"
-            fontWeight="500"
-          >
-            Mersin
-          </text>
         </motion.g>
+        <text
+          x="270"
+          y="168"
+          textAnchor="middle"
+          fill="#2b2a26"
+          fontFamily="Georgia, serif"
+          fontStyle="italic"
+          fontSize="14"
+          fontWeight="500"
+        >
+          Mersin
+        </text>
 
         {/* Tiny leaves on the path */}
         <motion.g

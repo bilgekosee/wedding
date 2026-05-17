@@ -79,27 +79,33 @@ export function RingsSection({
         {mounted && (
           // multiply: model white center × cream page bg → cream
           // mask: outer grey vignette fades to transparent.
-          // visibility hidden until onLoad fires: Sketchfab's "Loading…"
-          // splash text isn't suppressed by ui_loading=0 in all browsers,
-          // so we hide the whole iframe until the model is ready. We use
-          // `visibility` (not `opacity`) so there's no CSS transition on
-          // the blend-mode+mask layer — which was freezing all other
-          // mobile animations.
+          // iframe always rendered when mounted; a cream cover above it
+          // hides Sketchfab's "Loading…" splash text while the model
+          // initialises. iframe.onLoad only fires when iframe HTML is
+          // parsed, not when the 3D model is ready — so we add a 3s
+          // heuristic delay (covers iOS WebGL init on slow networks).
           <iframe
             title={`${ariaLabel} — 3B model`}
             src={buildEmbedUrl(modelId)}
-            onLoad={() => setLoaded(true)}
+            onLoad={() => {
+              window.setTimeout(() => setLoaded(true), 3000);
+            }}
             className="pointer-events-auto absolute left-1/2 top-1/2 h-[140%] w-[115%] -translate-x-1/2 -translate-y-[40%]"
             style={{
               mixBlendMode: "multiply",
               maskImage: RADIAL_MASK,
               WebkitMaskImage: RADIAL_MASK,
-              visibility: loaded ? "visible" : "hidden",
             }}
             allow="autoplay; fullscreen; xr-spatial-tracking"
             allowFullScreen
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
+          />
+        )}
+        {!loaded && (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-10 bg-cream"
           />
         )}
       </motion.div>
