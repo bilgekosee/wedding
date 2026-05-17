@@ -33,6 +33,7 @@ export function RingsSection({
 }) {
   const frameRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   // Lazy mount via IntersectionObserver with a generous rootMargin so the
   // iframe begins fetching well before the user scrolls into view, but
@@ -78,17 +79,22 @@ export function RingsSection({
         {mounted && (
           // multiply: model white center × cream page bg → cream
           // mask: outer grey vignette fades to transparent.
-          // No opacity transition: animating opacity on top of blend-mode
-          // + mask froze every other animation on mobile. Sketchfab's own
-          // loading UI is suppressed via `ui_loading=0` in the URL.
+          // visibility hidden until onLoad fires: Sketchfab's "Loading…"
+          // splash text isn't suppressed by ui_loading=0 in all browsers,
+          // so we hide the whole iframe until the model is ready. We use
+          // `visibility` (not `opacity`) so there's no CSS transition on
+          // the blend-mode+mask layer — which was freezing all other
+          // mobile animations.
           <iframe
             title={`${ariaLabel} — 3B model`}
             src={buildEmbedUrl(modelId)}
+            onLoad={() => setLoaded(true)}
             className="pointer-events-auto absolute left-1/2 top-1/2 h-[140%] w-[115%] -translate-x-1/2 -translate-y-[40%]"
             style={{
               mixBlendMode: "multiply",
               maskImage: RADIAL_MASK,
               WebkitMaskImage: RADIAL_MASK,
+              visibility: loaded ? "visible" : "hidden",
             }}
             allow="autoplay; fullscreen; xr-spatial-tracking"
             allowFullScreen
